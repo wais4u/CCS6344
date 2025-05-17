@@ -10,9 +10,9 @@ GO
 
 CREATE TABLE Users (
 	User_ID INT IDENTITY(1,1) PRIMARY KEY,
-	Username VARCHAR(50) NOT NULL UNIQUE,
-	Email VARCHAR(50) NOT NULL UNIQUE,
-	Password VARCHAR(255) NOT NULL,
+	Username NVARCHAR(50) NOT NULL UNIQUE,
+	Email NVARCHAR(50) NOT NULL UNIQUE,
+	Password NVARCHAR(255) NOT NULL,
 	Created_At DATETIME DEFAULT GETDATE()
 );
 
@@ -59,4 +59,17 @@ EXEC sp_addrolemember 'diaryblockwriter', 'diaryblockuser';
 DROP Table diary_app.dbo.Entries
 DROP Table diary_app.dbo.Users
 
+'''
+
+
+
+# Drop diary_app db user and roles when wanna reset 
+
+'''
+USE diary_app;
+GO
+
+DROP USER diaryblockuser;
+
+DROP ROLE diaryblockwriter;
 '''

@@ -1,6 +1,8 @@
 from flask import Flask, request, render_template, redirect, url_for, session
 from datetime import datetime
+
 import pyodbc
+import bcrypt
 
 app = Flask(__name__)
 
@@ -25,22 +27,27 @@ def home():
 def login():
     if request.method == 'POST':
         username = request.form['username']
-        password = request.form['password']
+        raw_password = request.form['password']
+
 
         try:
             conn = pyodbc.connect(conn_str)
             cursor = conn.cursor()
 
-            # Match both username and password directly (NOT recommended for production)
-            cursor.execute("SELECT * FROM Users WHERE username = ? AND password = ?", (username, password))
+            cursor.execute("SELECT User_ID, Password FROM Users WHERE username = ?", (username,))
             user = cursor.fetchone()
 
-            if user:
+            #return user[1]
+
+            if user and bcrypt.checkpw(raw_password.encode('utf-8'), user[1].encode('utf-8')):
                 session['username'] = username
                 #return "Login successful!"
                 return redirect(url_for('home_page'))
             else:
-                return "Invalid username or password."
+                return '''
+                        <h2>Invalid username or password.</h2>
+                        <p><a href="/login">Click here to return to login page</a></p>
+                    '''
 
         except Exception as e:
             return f"Login failed: {e}"
@@ -55,7 +62,8 @@ def register():
     if request.method == 'POST':
         email = request.form['email']
         username = request.form['username']
-        password = request.form['password']
+        raw_password = request.form['password']
+        hashed_password = bcrypt.hashpw(raw_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
         try:
             conn = pyodbc.connect(conn_str)
@@ -65,9 +73,12 @@ def register():
             cursor.execute("SELECT * FROM Users WHERE Username = ? OR Email = ?", (username, email))
             existing_user = cursor.fetchone()
             if existing_user:
-                return "Username or email already taken."
+                return '''
+                    <h2>Username or email already taken.</h2>
+                    <p><a href="/register">Click here to go back to registration page</a></p>
+                '''
 
-            cursor.execute("INSERT INTO Users (Username, Email, Password) VALUES (?, ?, ?)", (username, email, password))
+            cursor.execute("INSERT INTO Users (Username, Email, Password) VALUES (?, ?, ?)", (username, email, hashed_password))
             conn.commit()
             conn.close()
 
