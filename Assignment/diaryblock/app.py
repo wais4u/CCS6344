@@ -46,13 +46,14 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
+        email = request.form['email']
         username = request.form['username']
         password = request.form['password']
 
         try:
             conn = pyodbc.connect(conn_str)
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO Users (username, password) VALUES (?, ?)", (username, password))
+            cursor.execute("INSERT INTO Users (username, email, password) VALUES (?, ?, ?)", (username, email, password))
             conn.commit()
             conn.close()
             return "Registration successful!"
