@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Diary</title>
+</head>
+<body>
+    <h1>Welcome, {{ username }}!</h1>
+
+    <h2>Write a new diary entry</h2>
+    <form method="POST" action="{{ url_for('add_entry') }}">
+        <textarea name="content" rows="5" cols="50" placeholder="Write about your day..." required></textarea><br><br>
+        <input type="submit" value="Save Entry">
+    </form>
+
+    <hr>
+
+    <h2>Your Diary Entries</h2>
+    {% if entries %}
+        {% for entry in entries %}
+            <div style="margin-bottom: 20px;">
+                <strong>{{ entry.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</strong><br>
+                <p>{{ entry.content }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>You have no diary entries yet.</p>
+    {% endif %}
+
+    <hr>
+    <form method="POST" action="{{ url_for('logout') }}">
+        <input type="submit" value="Logout">
+    </form>
+</body>
+</html>
