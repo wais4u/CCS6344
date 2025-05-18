@@ -54,6 +54,62 @@ EXEC sp_addrolemember 'diaryblockwriter', 'diaryblockuser';
 
 
 
+# Creating audit logs for CRUD operations done 
+'''
+CREATE SERVER AUDIT DiaryBlockAudit
+TO FILE (
+    FILEPATH = 'C:\auditfiles\audit',
+    MAXSIZE = 10 MB,
+    MAX_FILES = 100,
+    RESERVE_DISK_SPACE = OFF
+)
+WITH (
+    QUEUE_DELAY = 1000,
+    ON_FAILURE = CONTINUE
+);
+
+ALTER SERVER AUDIT DiaryBlockAudit
+WITH (STATE = ON);
+
+USE diary_app;
+GO
+
+CREATE DATABASE AUDIT SPECIFICATION AuditDiaryBlockActivity
+FOR SERVER AUDIT DiaryBlockAudit
+ADD (SELECT, INSERT, DELETE, UPDATE ON DATABASE::[diary_app] BY [diaryblockuser])
+WITH (STATE = ON);
+
+'''
+
+
+
+# View the logs for CRUD operations done 
+'''
+SELECT *
+FROM sys.fn_get_audit_file('C:\auditfiles\audit\*.sqlaudit', DEFAULT, DEFAULT);
+
+'''
+
+
+
+# Stop auditing the logs 
+'''
+ALTER DATABASE AUDIT SPECIFICATION AuditDiaryBlockActivity WITH (STATE = OFF);
+ALTER SERVER AUDIT DiaryBlockAudit WITH (STATE = OFF);
+
+'''
+
+
+
+# Drop the audits when wanna reset
+'''
+DROP DATABASE AUDIT SPECIFICATION AuditDiaryBlockActivity;
+DROP SERVER AUDIT DiaryBlockAudit;
+
+'''
+
+
+
 # Drop tables when wanna reset 
 
 '''
