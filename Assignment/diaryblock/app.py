@@ -108,9 +108,26 @@ def home_page():
 
         if user:
             User_ID = user[0]
-            cursor.execute("SELECT Content, Created_at FROM Entries WHERE User_ID = ? ORDER BY Created_At DESC", (User_ID,))
+            cursor.execute("SELECT Entry_ID, Content, Created_at FROM Entries WHERE User_ID = ? ORDER BY Created_At DESC", (User_ID,))
             entries = cursor.fetchall()
-            entries = [{'content': e[0], 'created_at': e[1]} for e in entries]
+            entries = [
+                {
+                    'entry_id' : e[0],
+                    'content': e[1], 
+                    'created_at': e[2]
+                } 
+                for e in entries
+            ]
+            '''
+            entries_dicts = [
+                {
+                    'entry_id': row.Entry_ID,
+                    'content': row.Content,
+                    'created_at': row.Created_At
+                }
+                for row in entries
+            ]
+            '''
         else:
             entries = []
 
@@ -150,6 +167,59 @@ def add_entry():
         conn.close()
 
     return redirect(url_for('home_page'))
+
+@app.route('/delete_entry/<int:entry_id>', methods=['POST'])
+def delete_entry(entry_id):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    try:
+        conn = pyodbc.connect(conn_str)
+        cursor = conn.cursor()
+
+        # Get user ID
+        cursor.execute("SELECT User_ID FROM Users WHERE Username = ?", session['username'])
+        user = cursor.fetchone()
+
+        if user:
+            cursor.execute("DELETE FROM Entries WHERE Entry_ID = ? AND User_ID = ?", (entry_id, user.User_ID))
+            conn.commit()
+
+    except Exception as e:
+        return f"Error deleting entry: {e}"
+
+    finally:
+        conn.close()
+
+    return redirect(url_for('home_page'))
+
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    try:
+        conn = pyodbc.connect(conn_str)
+        cursor = conn.cursor()
+
+        # Delete user — will cascade delete entries due to FK with ON DELETE CASCADE
+        cursor.execute("DELETE FROM Users WHERE Username = ?", session['username'])
+        conn.commit()
+
+        # Clear session after deletion
+        session.pop('username', None)
+
+    except Exception as e:
+        return f"Error deleting account: {e}"
+
+    finally:
+        conn.close()
+
+    return '''
+        <h2>Your account and diary entries have been deleted.</h2>
+        <p><a href="/register">Click here to register again</a></p>
+    '''
+
 
 @app.route('/logout', methods=['POST'])
 def logout():

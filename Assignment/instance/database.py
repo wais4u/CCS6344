@@ -35,9 +35,10 @@ CREATE TABLE Entries (
 
 '''
 -- At server level
-CREATE LOGIN diaryblockuser WITH PASSWORD = 'D1aryBlock01';
+USE master;
+CREATE LOGIN diaryblockuser WITH PASSWORD = 'D1aryBl0ck01';
 
--- In your target database
+-- In the diary_app database
 USE diary_app;
 CREATE USER diaryblockuser FOR LOGIN diaryblockuser;
 
