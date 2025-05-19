@@ -3,8 +3,8 @@
 
 DiaryBlock is a simple Flask-based diary web application that is secure and user-friendly developed as part of the **Database and Cloud Security CCS6344** assignment. The project focuses on demonstrating secure practices in web development and database interactions
 
+## Group 33
 ## Team Members
-
 
 |Name | Student ID |
 |-------------------|----|
@@ -14,6 +14,9 @@ DiaryBlock is a simple Flask-based diary web application that is secure and user
 
 ## Lecturer
 Dr. Navaneethan A/L C. Arjuman
+
+## Submission Date
+19th May 2025
 
 ## Features
 
